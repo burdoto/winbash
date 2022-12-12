@@ -8,4 +8,8 @@
         <RootNamespace>winbash.cat</RootNamespace>
     </PropertyGroup>
 
+    <ItemGroup>
+      <ProjectReference Include="..\winbash-util\winbash-util.csproj" />
+    </ItemGroup>
+
 </Project>
