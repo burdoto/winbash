@@ -6,6 +6,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "winbash", "winbash\winbash.
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "cat", "cat\cat.csproj", "{9AB0D9A1-C19A-4A0F-87EA-1F322A922EF0}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "winbash-util", "winbash-util\winbash-util.csproj", "{EA89A8A6-7490-4938-99D3-4D885256D317}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -24,5 +26,9 @@ Global
 		{9AB0D9A1-C19A-4A0F-87EA-1F322A922EF0}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{9AB0D9A1-C19A-4A0F-87EA-1F322A922EF0}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{9AB0D9A1-C19A-4A0F-87EA-1F322A922EF0}.Release|Any CPU.Build.0 = Release|Any CPU
+		{EA89A8A6-7490-4938-99D3-4D885256D317}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{EA89A8A6-7490-4938-99D3-4D885256D317}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{EA89A8A6-7490-4938-99D3-4D885256D317}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{EA89A8A6-7490-4938-99D3-4D885256D317}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal
