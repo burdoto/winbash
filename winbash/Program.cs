@@ -1,9 +1,12 @@
-﻿using winbash.util;
+﻿using System.Diagnostics;
+using winbash.util;
 
 namespace winbash;
 
 public static class Program
 {
+    private static readonly string BashHomeDir = new DirectoryInfo(typeof(Program).Assembly.Location).Parent!.FullName;
+    
     public static void Main(string[] _)
     {
         bool exiting = false;
@@ -27,18 +30,39 @@ public static class Program
                     exiting = true;
                     break;
                 case "ls":
+                    var path0 = PathUtil.Get(string.Join(" ", args)) ?? ".";
+                    foreach (var fse in Directory.EnumerateFileSystemEntries(path0))
+                        Console.WriteLine(File.Exists(fse) ? new FileInfo(fse).Name : new DirectoryInfo(fse).Name);
                     break;
                 case "cd":
-                    var path = string.Join(" ", args);
-                    path = PathUtil.Unwrap(path);
-                    if (path == null || !Directory.Exists(path))
+                    if (PathUtil.Get(string.Join(" ", args)) is { } path1)
+                        Environment.CurrentDirectory = path1;
+                    break;
+                case "which":
+                    if (Which(cmds[1]) is { } exe0) 
+                        Console.WriteLine(exe0);
+                    else Console.WriteLine($"which: {cmds[1]}: Command not found");
+                    break;
+                default:
+                    if (Which(cmds[0]) is not { } exe1)
                     {
-                        Console.WriteLine("Not a directory: " + path);
+                        Console.WriteLine($"{cmds[0]}: Command not found");
                         break;
                     }
-                    Environment.CurrentDirectory = path;
+                    var startInfo = new ProcessStartInfo(exe1) { Arguments = string.Join(" ", args) };
+                    var process = new Process() { StartInfo = startInfo };
+                    process.Start();
+                    process.WaitForExit();
+                    Console.WriteLine($"{cmds[0]}: Exited with code {process.ExitCode} (0x{process.ExitCode:x8})");
+                    process.Close();
                     break;
             }
         }
     }
+
+    private static string? Which(string cmd) => new[] { Environment.CurrentDirectory, BashHomeDir }
+            .Concat(Environment.GetEnvironmentVariable("path")
+                ?.Split(Path.PathSeparator) ?? Array.Empty<string>())
+            .Select(dir => Path.Combine(dir, cmd + ".exe"))
+            .FirstOrDefault(File.Exists);
 }
