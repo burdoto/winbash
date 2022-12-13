@@ -12,4 +12,8 @@
       <ProjectReference Include="..\winbash-util\winbash-util.csproj" />
     </ItemGroup>
 
+    <ItemGroup>
+      <PackageReference Include="CommandLineParser" Version="2.9.1" />
+    </ItemGroup>
+
 </Project>
