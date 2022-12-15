@@ -10,6 +10,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "winbash-util", "winbash-uti
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ls", "ls\ls.csproj", "{8972FD47-0F74-4E6C-979C-A223A9B02130}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "du", "du\du.csproj", "{2808FC4A-5AEA-443D-AABD-52EED0235878}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -36,5 +38,9 @@ Global
 		{8972FD47-0F74-4E6C-979C-A223A9B02130}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{8972FD47-0F74-4E6C-979C-A223A9B02130}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{8972FD47-0F74-4E6C-979C-A223A9B02130}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2808FC4A-5AEA-443D-AABD-52EED0235878}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2808FC4A-5AEA-443D-AABD-52EED0235878}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2808FC4A-5AEA-443D-AABD-52EED0235878}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2808FC4A-5AEA-443D-AABD-52EED0235878}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

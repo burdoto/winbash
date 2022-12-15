@@ -2,6 +2,7 @@
 
 namespace winbash.util;
 
+// https://www.lihaoyi.com/post/BuildyourownCommandLinewithANSIescapecodes.html
 public class AnsiUtil
 {
     public const string Reset = "\u001b[0m";
