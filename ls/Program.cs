@@ -11,15 +11,22 @@ public static class Program
     public static void Main(string[] param)
     {
         var args = Parser.Default.ParseArguments<Args>(param).Value;
-        var path = PathUtil.Unwrap(args.Path);
+        var path = PathUtil.Unwrap(args.Path ?? Environment.CurrentDirectory);
 
         var entries = Directory.EnumerateFileSystemEntries(path);
         if (!args.All && !args.AlmostAll)
             entries = entries.Where(f => (new FileInfo(f).Attributes & FileAttributes.Hidden) == 0);
         if (args.Detailed)
-            entries = entries.Select(f => $"{GetMod(f):10} {GetHardlinkCount(f):##} {GetOwner(f):8} {GetGroup(f):8} " +
-                                          $"{GetSize(f, args.HumanReadableSizes):4} {GetChangedMonth(f)} " +
-                                          $"{GetChangedDOM(f):2} {GetChangedTimeDetail(f):5} {new FileInfo(f).Name}");
+            entries = entries.Select(f => $"{GetMod(f)} " +
+                                          $"{GetHardlinkCount(f):##} " +
+                                          $"{GetOwner(f).Split("\\")[^1].Trim(8)} " +
+                                          $"{GetGroup(f).Split("\\")[^1].Trim(8)} " +
+                                          $"{GetSize(f, args.HumanReadableSizes)} " +
+                                          $"{GetChangedMonth(f).Trim(3)} " +
+                                          $"{GetChangedDOM(f):##} " +
+                                          $"{GetChangedTimeDetail(f).Trim(5)} " +
+                                          $"{new FileInfo(f).Name}");
+        else entries = entries.Select(f => new FileInfo(f).Name);
         
         foreach (var entry in entries)
             Console.WriteLine(entry);
@@ -36,7 +43,7 @@ public static class Program
         else if (file.IsSymbolicLink())
             s += 'l';
         else s += '-';
-        s += 'r';
+        s += "rwx";
         Func<FileInfo, FileSystemAccessRule, string> acsTest = (file, acs) =>
         {
             if (file.IsReadOnly)
@@ -51,15 +58,15 @@ public static class Program
         s += acsTest(file, file.Directory.GetAccessControl(AccessControlSections.Group).GetAccessRules(true, false, typeof(SecurityIdentifier))[0]);
         s += acsTest(file, file.Directory.GetAccessControl(AccessControlSections.All).GetAccessRules(true, false, typeof(SecurityIdentifier))[0]);
         */
-        s += "?????????"; // todo
+        s += "------"; // todo
         return s;
     }
 
-    private static int GetHardlinkCount(string path) => -1; // todo
+    private static int GetHardlinkCount(string path) => 0; // todo
 
-    private static string GetOwner(string path) => new FileInfo(path).GetAccessControl().GetOwner(typeof(IdentityReference))?.Value ?? "unknown";
+    private static string GetOwner(string path) => new FileInfo(path).GetAccessControl().GetOwner(typeof(NTAccount))?.Value ?? "unknown";
 
-    private static string GetGroup(string path) => new FileInfo(path).GetAccessControl().GetGroup(typeof(IdentityReference))?.Value ?? "unknown";
+    private static string GetGroup(string path) => new FileInfo(path).GetAccessControl().GetGroup(typeof(NTAccount))?.Value ?? "unknown";
 
     private static string GetSize(string path, bool humanReadable)
     {
@@ -67,25 +74,35 @@ public static class Program
         return humanReadable ? ByteUtil.ReadableAmount(amount) : amount.ToString();
     }
 
-    private static string GetChangedMonth(string path)
+    private static string GetChangedMonth(string path) => File.GetLastWriteTime(path).Month switch
     {
-        new FileInfo(path).GetAccessControl().Get
-    }
+        1 => "Jan",
+        2 => "Feb",
+        3 => "Mar",
+        4 => "Apr",
+        5 => "May",
+        6 => "Jun",
+        7 => "Jul",
+        8 => "Aug",
+        9 => "Sep",
+        10 => "Oct",
+        11 => "Nov",
+        12 => "Dec",
+        _ => throw new ArgumentOutOfRangeException("Invalid month", (Exception?)null)
+    };
 
-    private static int GetChangedDOM(string path)
-    {
-        throw new NotImplementedException();
-    }
+    private static int GetChangedDOM(string path) => File.GetLastWriteTime(path).Day;
 
-    private static string GetChangedTimeDetail(string s)
+    private static string GetChangedTimeDetail(string path)
     {
-        throw new NotImplementedException();
+        var time = File.GetLastWriteTime(path);
+        return time.Year != DateTime.Now.Year ? time.Year.ToString() : $"{time.Hour:00}:{time.Minute:00}";
     }
 
     private class Args
     {
-        [Value(0, Required = true)]
-        public string Path { get; set; }
+        [Value(0, Required = false)]
+        public string? Path { get; set; }
         
         [Option(shortName: 'a', longName: "all")]
         public bool All { get; set; }
