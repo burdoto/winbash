@@ -5,14 +5,10 @@
         <TargetFramework>net7.0</TargetFramework>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
+        <RootNamespace>winbash.sudo</RootNamespace>
     </PropertyGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\cat\cat.csproj" />
-      <ProjectReference Include="..\du\du.csproj" />
-      <ProjectReference Include="..\grep\grep.csproj" />
-      <ProjectReference Include="..\ls\ls.csproj" />
-      <ProjectReference Include="..\sudo\sudo.csproj" />
       <ProjectReference Include="..\winbash-util\winbash-util.csproj" />
     </ItemGroup>
 

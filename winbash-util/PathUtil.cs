@@ -4,6 +4,7 @@ namespace winbash.util;
 
 public static class PathUtil
 {
+    private static readonly string BashHomeDir = new DirectoryInfo(typeof(PathUtil).Assembly.Location).Parent!.FullName;
     public static readonly string HomeDir = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
     
     public static string Unwrap(string path)
@@ -30,4 +31,10 @@ public static class PathUtil
         }
         return path;
     }
+    
+    public static string? Which(string cmd) => new[] { Environment.CurrentDirectory, BashHomeDir }
+        .Concat(Environment.GetEnvironmentVariable("path")
+            ?.Split(Path.PathSeparator) ?? Array.Empty<string>())
+        .Select(dir => Path.Combine(dir, cmd + ".exe"))
+        .FirstOrDefault(File.Exists);
 }

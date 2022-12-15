@@ -5,8 +5,6 @@ namespace winbash;
 
 public static class Program
 {
-    private static readonly string BashHomeDir = new DirectoryInfo(typeof(Program).Assembly.Location).Parent!.FullName;
-    
     public static void Main(string[] _)
     {
         bool exiting = false;
@@ -34,12 +32,12 @@ public static class Program
                         Environment.CurrentDirectory = path1;
                     break;
                 case "which":
-                    if (Which(cmds[1]) is { } exe0) 
+                    if (PathUtil.Which(cmds[1]) is { } exe0) 
                         Console.WriteLine(exe0);
                     else Console.WriteLine($"which: {cmds[1]}: Command not found");
                     break;
                 default:
-                    if (Which(cmds[0]) is not { } exe1)
+                    if (PathUtil.Which(cmds[0]) is not { } exe1)
                     {
                         Console.WriteLine($"{cmds[0]}: Command not found");
                         break;
@@ -54,10 +52,4 @@ public static class Program
             }
         }
     }
-
-    private static string? Which(string cmd) => new[] { Environment.CurrentDirectory, BashHomeDir }
-            .Concat(Environment.GetEnvironmentVariable("path")
-                ?.Split(Path.PathSeparator) ?? Array.Empty<string>())
-            .Select(dir => Path.Combine(dir, cmd + ".exe"))
-            .FirstOrDefault(File.Exists);
 }
