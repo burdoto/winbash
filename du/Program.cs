@@ -42,7 +42,7 @@ public static class Program
     {
         FileInfo info = new FileInfo(file);
         uint dummy, sectorsPerCluster, bytesPerSector;
-        int result = GetDiskFreeSpaceW(info.Directory.Root.FullName, out sectorsPerCluster, out bytesPerSector, out dummy, out dummy);
+        int result = GetDiskFreeSpaceW(info.Directory!.Root.FullName, out sectorsPerCluster, out bytesPerSector, out dummy, out dummy);
         if (result == 0) throw new Win32Exception();
         uint clusterSize = sectorsPerCluster * bytesPerSector;
         uint hosize;
