@@ -1,8 +1,10 @@
-﻿namespace winbash.util;
+﻿using System.Text;
+
+namespace winbash.util;
 
 public static class StringUtil
 {
-    public static string Trim(this string str, int len, bool rightBound = false, bool doFill = false, char fill = ' ')
+    public static string Adjust(this string str, int len, bool rightBound = false, bool doFill = true, char fill = ' ')
     {
         str = str.Trim();
         var n = len - str.Length;
@@ -20,5 +22,96 @@ public static class StringUtil
             else str += extra;
         }
         return str;
+    }
+}
+
+public class TextTable
+{
+    public readonly List<Column> Columns = new();
+    public readonly List<Row> Rows = new();
+    private readonly bool _header;
+    private readonly bool _outlines;
+    private readonly bool _inlines;
+
+    public TextTable(bool header = true, bool outlines = false, bool inlines = false)
+    {
+        _header = header;
+        _outlines = outlines;
+        _inlines = inlines;
+    }
+
+    public Column AddColumn(string name, bool justifyRight = false)
+    {
+        var col = new Column(name, justifyRight);
+        Columns.Add(col);
+        return col;
+    }
+
+    public Row AddRow()
+    {
+        var row = new Row();
+        foreach (var col in Columns) 
+            row._data[col] = string.Empty;
+        Rows.Add(row);
+        return row;
+    }
+
+    public override string ToString()
+    {
+        var c = Columns.Count;
+        var lens = new int[c];
+        for (var i = 0; i < c; i++)
+        {
+            // for each column, collect longest data
+            var col = Columns[i];
+            foreach (var data in new[] { _header ? col.Name : string.Empty }.Concat(Rows.Select(row => row._data[col])))
+            {
+                var len = data.ToString()!.Length;
+                if (lens[i] < len)
+                    lens[i] = len;
+            }
+        }
+        // todo: include outlines & inlines
+        var sb = new StringBuilder();
+        if (_header)
+        {
+            for (var i = 0; i < c; i++)
+                sb.Append(Columns[i].Name.Adjust(lens[i])).Append(' ');
+            sb.AppendLine();
+        }
+        foreach (var row in Rows)
+        {
+            for (var i = 0; i < c; i++)
+            {
+                var col = Columns[i];
+                sb.Append(row._data[col].ToString()!.Adjust(lens[i], col._justifyRight)).Append(' ');
+            }
+
+            sb.AppendLine();
+        }
+        return sb.ToString();
+    }
+
+    public class Row
+    {
+        internal readonly Dictionary<Column, object> _data = new();
+
+        public Row SetData(Column col, object data)
+        {
+            _data[col] = data;
+            return this;
+        }
+    }
+
+    public class Column
+    {
+        public readonly string Name;
+        internal readonly bool _justifyRight;
+
+        public Column(string name, bool justifyRight)
+        {
+            Name = name;
+            _justifyRight = justifyRight;
+        }
     }
 }

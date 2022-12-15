@@ -15,7 +15,7 @@ public class ByteUtil
             i += 1;
         }
 
-        var num = amount < 10 ? $"{amount:#.#}" : Math.Round(amount, 0).ToString(CultureInfo.InvariantCulture);
+        var num = amount < 10 ? $"{amount:#.0}" : Math.Round(amount, 0).ToString(CultureInfo.InvariantCulture);
         var suffix = i == -1 ? string.Empty : suffixes[i].ToString();
         return num + suffix;
     }

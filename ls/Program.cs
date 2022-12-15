@@ -17,19 +17,37 @@ public static class Program
         if (!args.All && !args.AlmostAll)
             entries = entries.Where(f => (new FileInfo(f).Attributes & FileAttributes.Hidden) == 0);
         if (args.Detailed)
-            entries = entries.Select(f => $"{GetMod(f)} " +
-                                          $"{GetHardlinkCount(f):##} " +
-                                          $"{GetOwner(f).Split("\\")[^1].Trim(8)} " +
-                                          $"{GetGroup(f).Split("\\")[^1].Trim(8)} " +
-                                          $"{GetSize(f, args.HumanReadableSizes)} " +
-                                          $"{GetChangedMonth(f).Trim(3)} " +
-                                          $"{GetChangedDOM(f):##} " +
-                                          $"{GetChangedTimeDetail(f).Trim(5)} " +
-                                          $"{new FileInfo(f).Name}");
-        else entries = entries.Select(f => new FileInfo(f).Name);
-        
-        foreach (var entry in entries)
-            Console.WriteLine(entry);
+        {
+            var table = new TextTable(false);
+            var mod = table.AddColumn("mod");
+            var hlc = table.AddColumn("hardlinkCount", true);
+            var own = table.AddColumn("owner");
+            var grp = table.AddColumn("group");
+            var siz = table.AddColumn("size", true);
+            var mon = table.AddColumn("changedMonth");
+            var dom = table.AddColumn("changedDOM", true);
+            var det = table.AddColumn("changedDetail", true);
+            var nam = table.AddColumn("name");
+            foreach (var file in entries)
+                table.AddRow()
+                    .SetData(mod, GetMod(file))
+                    .SetData(hlc, GetHardlinkCount(file))
+                    .SetData(own, GetOwner(file).Split("\\")[^1])
+                    .SetData(grp, GetGroup(file).Split("\\")[^1])
+                    .SetData(siz, GetSize(file, args.HumanReadableSizes))
+                    .SetData(mon, GetChangedMonth(file))
+                    .SetData(dom, GetChangedDOM(file))
+                    .SetData(det, GetChangedTimeDetail(file))
+                    .SetData(nam, new FileInfo(file).Name);
+            Console.Write(table);
+        }
+        else
+        {
+            entries = entries.Select(f => new FileInfo(f).Name);
+
+            foreach (var entry in entries)
+                Console.WriteLine(entry);
+        }
     }
 
     private static string GetMod(string path)
