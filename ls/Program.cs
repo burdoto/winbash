@@ -88,7 +88,7 @@ public static class Program
 
     private static string GetSize(string path, bool humanReadable)
     {
-        var amount = new FileInfo(path).Length;
+        var amount = Directory.Exists(path) ? 4096 : new FileInfo(path).Length;
         return humanReadable ? ByteUtil.ReadableAmount(amount) : amount.ToString();
     }
 
