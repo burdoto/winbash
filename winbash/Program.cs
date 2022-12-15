@@ -29,11 +29,6 @@ public static class Program
                 case "exit":
                     exiting = true;
                     break;
-                case "ls":
-                    var path0 = PathUtil.Get(string.Join(" ", args)) ?? ".";
-                    foreach (var fse in Directory.EnumerateFileSystemEntries(path0))
-                        Console.WriteLine(File.Exists(fse) ? new FileInfo(fse).Name : new DirectoryInfo(fse).Name);
-                    break;
                 case "cd":
                     if (PathUtil.Get(string.Join(" ", args)) is { } path1)
                         Environment.CurrentDirectory = path1;

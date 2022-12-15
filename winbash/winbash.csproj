@@ -10,6 +10,7 @@
     <ItemGroup>
       <ProjectReference Include="..\cat\cat.csproj" />
       <ProjectReference Include="..\grep\grep.csproj" />
+      <ProjectReference Include="..\ls\ls.csproj" />
       <ProjectReference Include="..\winbash-util\winbash-util.csproj" />
     </ItemGroup>
 
