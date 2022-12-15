@@ -14,6 +14,7 @@ public static class Program
         while (!exiting)
         {
             Console.Write($"{AnsiUtil.Green}{Environment.UserName}@{Environment.UserDomainName} {AnsiUtil.Blue}{PathUtil.Wrap(Environment.CurrentDirectory)} $ {AnsiUtil.Reset}");
+            Console.Title = $"{Environment.UserName}@{Environment.UserDomainName}:{PathUtil.Wrap(Environment.CurrentDirectory)}";
             var cmd = Console.ReadLine();
             if (string.IsNullOrEmpty(cmd))
                 continue;
