@@ -31,8 +31,8 @@ namespace winbash.util
 
     public class TextTable
     {
-        public readonly List<Column> Columns = new();
-        public readonly List<Row> Rows = new();
+        public readonly List<Column> Columns = new List<Column>();
+        public readonly List<Row> Rows = new List<Row>();
         private readonly bool _header;
         private readonly bool _lines;
 
