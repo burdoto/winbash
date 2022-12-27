@@ -12,4 +12,8 @@
       <PackageReference Include="SymbolicLinkSupport" Version="1.2.0" />
     </ItemGroup>
 
+    <ItemGroup>
+      <ProjectReference Include="..\..\csapi\common\common.csproj" />
+    </ItemGroup>
+
 </Project>
