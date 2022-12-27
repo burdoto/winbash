@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Text;
 
@@ -32,17 +33,19 @@ namespace winbash.util
         }
     }
 
+    [SuppressMessage("ReSharper", "ArrangeObjectCreationWhenTypeEvident")]
     public class TextTable
     {
         public readonly List<Column> Columns = new List<Column>();
         public readonly List<Row> Rows = new List<Row>();
         private readonly bool _header;
-        private readonly bool _lines;
+        private readonly LineMode? _lineMode;
+        private const int margin = 1;
 
-        public TextTable(bool header = true, bool lines = false)
+        public TextTable(bool header = true, LineMode? lineMode = null)
         {
             _header = header;
-            _lines = lines;
+            _lineMode = lineMode;
         }
 
         public Column AddColumn(string name, bool justifyRight = false)
@@ -63,9 +66,9 @@ namespace winbash.util
 
         public override string ToString()
         {
-            var c = Columns.Count;
-            var lens = new int[c];
-            for (var i = 0; i < c; i++)
+            var cc = Columns.Count;
+            var lens = new int[cc];
+            for (var i = 0; i < cc; i++)
             {
                 // for each column, collect longest data
                 var col = Columns[i];
@@ -80,23 +83,57 @@ namespace winbash.util
 
             // todo: include outlines & inlines
             var sb = new StringBuilder();
+            var lines = _lineMode != null;
+            var totalW = lens.Aggregate(0, (a, b) => a + b + margin/**/) + cc + lens.Length * margin;
+            var colTrims = lens.Select(x => 1 + x + margin * 2).Append(0).ToArray();
             if (_header)
             {
-                for (var i = 0; i < c; i++)
-                    sb.Append(Columns[i].Name.Adjust(lens[i])).Append(' ');
+                if (lines) sb.Append(HoriDetailLine(totalW, colTrims, LineType.ConD, LineType.Bold));
+
+                var dir = LineType.ConR;
+                for (var i = 0; i < cc; i++)
+                {
+                    if (i == cc)
+                        dir &= ~LineType.ConR;
+                    if (lines)
+                        sb.Append(VertIndent(dir, LineType.Bold));
+                    dir |= LineType.ConL;
+                    sb.Append(Columns[i].Name.Adjust(lens[i], Columns[i]._justifyRight));
+                    if (!lines)
+                        sb.Append(' ');
+                }
+                if (lines)
+                    sb.Append(VertIndent(dir, LineType.Bold));
                 sb.AppendLine();
             }
 
-            foreach (var row in Rows)
+            if (lines)
+                sb.Append(HoriDetailLine(totalW, colTrims,
+                        _header ? LineType.IdxVertical : LineType.ConD,
+                        _header ? LineType.Bold : LineType.None));
+            for (var ri = 0; ri < Rows.Count; ri++)
             {
-                for (var i = 0; i < c; i++)
+
+                var dir = LineType.ConR;
+                for (var i = 0; i < cc; i++)
                 {
                     var col = Columns[i];
-                    sb.Append(row._data[col].ToString()!.Adjust(lens[i], col._justifyRight)).Append(' ');
+                    if (i == cc)
+                        dir &= ~LineType.ConR;
+                    if (lines)
+                        sb.Append(VertIndent(dir));
+                    dir |= LineType.ConL;
+                    sb.Append(Rows[ri]._data[col].ToString()!.Adjust(lens[i], col._justifyRight));
+                    if (!lines)
+                        sb.Append(' ');
                 }
+                if (lines)
+                    sb.Append(VertIndent(LineType.ConL));
 
                 sb.AppendLine();
             }
+
+            if (lines) sb.Append(HoriDetailLine(totalW, colTrims, LineType.ConU));
 
             return sb.ToString();
         }
@@ -123,5 +160,136 @@ namespace winbash.util
                 _justifyRight = justifyRight;
             }
         }
+
+        #region Table Lining
+        private char GetLining(LineType type)
+        {
+            var db = LiningSymbols[_lineMode ?? LineMode.ASCII];
+            if (db.Keys.Contains(type))
+                return db[type];
+            (int nh, char c)? best = null;
+            foreach (var (id, c) in db)
+            {
+                var comp = type & id & ~LineType.Bold;
+                var bits = Convert.ToString((int)comp, 2).Count(x => x == '1');
+                if (comp == (type & ~LineType.Bold))
+                    return c;
+                if (bits >= (best?.nh ?? 0))
+                    best = (bits, c);
+            }
+            return best?.c ?? '#';
+        }
+
+        private string VertIndent(LineType dir, LineType detail = LineType.None)
+        {
+            var str = string.Empty;
+            if ((dir & LineType.ConL) != 0) 
+                str += new string(' ', margin);
+            str += GetLining(LineType.IdxVertical | detail);
+            if ((dir & LineType.ConR) != 0) 
+                str += new string(' ', margin);
+            return str;
+        }
+
+        private string HoriDetailLine(int len, int[] trims, LineType diff, LineType detail = LineType.None)
+        {
+            var line = LineType.ConR;
+            var str = string.Empty;
+            int ti = 0, tc = -1;
+            for (var i = 0; i <= len; i++)
+            {
+                if (i == 1)
+                    line |= LineType.ConL;
+                if (i == len)
+                    line &= ~LineType.ConR;
+
+                var useDiff = false;
+                // trim counter
+                if (--tc <= 0 && ti < trims.Length)
+                {
+                    useDiff = true;
+                    tc = trims[ti++];
+                }
+
+                str += GetLining(line | detail | (useDiff ? diff : 0));
+            }
+
+            return str + '\n';
+        }
+
+        public enum LineMode
+        {
+            ASCII,
+            Unicode
+        }
+
+        private static readonly Dictionary<LineMode, Dictionary<LineType, char>> LiningSymbols = new Dictionary<LineMode, Dictionary<LineType, char>>
+        {
+            {
+                LineMode.ASCII,
+                new Dictionary<LineType, char>
+                {
+                    {LineType.IdxHorizontal, '-' },
+                    {LineType.IdxVertical, '|'},
+                    {LineType.IdxCrossing, '+'}
+                }
+            },
+            {
+                LineMode.Unicode,
+                new Dictionary<LineType, char>
+                {
+                    {LineType.IdxHorizontal, '─'},
+                    {LineType.IdxVertical, '│'},
+                    {LineType.IdxCrossing, '┼'},
+                    {LineType.IdxTHoriU, '┴'},
+                    {LineType.IdxTHoriD, '┬'},
+                    {LineType.IdxTVertL, '┤'},
+                    {LineType.IdxTVertR, '├'},
+                    {LineType.IdxCornerTL, '┌'},
+                    {LineType.IdxCornerTR, '┐'},
+                    {LineType.IdxCornerBL, '└'},
+                    {LineType.IdxCornerBR, '┘'},
+                    {LineType.Bold | LineType.IdxHorizontal, '═'},
+                    {LineType.Bold | LineType.IdxVertical, '║'},
+                    {LineType.Bold | LineType.IdxCrossing, '╬'},
+                    {LineType.Bold | LineType.IdxTHoriU, '╩'},
+                    {LineType.Bold | LineType.IdxTHoriD, '╦'},
+                    {LineType.Bold | LineType.IdxTVertL, '╣'},
+                    {LineType.Bold | LineType.IdxTVertR, '╠'},
+                    {LineType.Bold | LineType.IdxCornerTL, '╔'},
+                    {LineType.Bold | LineType.IdxCornerTR, '╗'},
+                    {LineType.Bold | LineType.IdxCornerBL, '╚'},
+                    {LineType.Bold | LineType.IdxCornerBR, '╝'}
+                }
+            }
+        };
+
+        [Flags]
+        private enum LineType : int
+        {
+            None = 0b0_0000,
+            Bold = 0b1_0000,
+            
+            ConU = 0b0_0001,
+            ConD = 0b0_0010,
+            ConL = 0b0_0100,
+            ConR = 0b0_1000,
+
+            IdxHorizontal = ConL | ConR,
+            IdxVertical = ConU | ConD,
+
+            IdxCrossing = IdxHorizontal | IdxVertical,
+            IdxTHoriU = IdxHorizontal | ConU,
+            IdxTHoriD = IdxHorizontal | ConD,
+            IdxTVertL = IdxVertical | ConL,
+            IdxTVertR = IdxVertical | ConR,
+            
+            IdxCornerTL = ConD | ConR,
+            IdxCornerTR = ConD | ConL,
+            IdxCornerBL = ConU | ConR,
+            IdxCornerBR = ConU | ConL
+        }
+
+        #endregion
     }
 }
