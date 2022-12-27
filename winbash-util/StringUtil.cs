@@ -64,6 +64,8 @@ namespace winbash.util
             return row;
         }
 
+        public void AddSeparator() => Rows.Add(new SeparatorRow());
+
         public override string ToString()
         {
             var cc = Columns.Count;
@@ -72,8 +74,10 @@ namespace winbash.util
             {
                 // for each column, collect longest data
                 var col = Columns[i];
-                foreach (var data in new[] { _header ? col.Name : string.Empty }.Concat(Rows.Select(row =>
-                             row._data[col])))
+                foreach (var data in new[] { _header ? col.Name : string.Empty }
+                             .Concat(Rows
+                                 .Where(row => !row.Separator)
+                                 .Select(row => row._data[col])))
                 {
                     var len = data.ToString()!.Length;
                     if (lens[i] < len)
@@ -98,7 +102,7 @@ namespace winbash.util
                     if (lines)
                         sb.Append(VertIndent(dir, LineType.Bold));
                     dir |= LineType.ConL;
-                    sb.Append(Columns[i].Name.Adjust(lens[i], Columns[i]._justifyRight));
+                    sb.Append(Columns[i].Name.Adjust(lens[i]));
                     if (!lines)
                         sb.Append(' ');
                 }
@@ -113,7 +117,12 @@ namespace winbash.util
                         _header ? LineType.Bold : LineType.None));
             for (var ri = 0; ri < Rows.Count; ri++)
             {
-
+                var row = Rows[ri];
+                if (lines && row.Separator)
+                {
+                    sb.Append(HoriDetailLine(totalW, colTrims, LineType.IdxVertical));
+                    continue;
+                }
                 var dir = LineType.ConR;
                 for (var i = 0; i < cc; i++)
                 {
@@ -123,7 +132,7 @@ namespace winbash.util
                     if (lines)
                         sb.Append(VertIndent(dir));
                     dir |= LineType.ConL;
-                    sb.Append(Rows[ri]._data[col].ToString()!.Adjust(lens[i], col._justifyRight));
+                    sb.Append(row._data[col].ToString()!.Adjust(lens[i], col._justifyRight));
                     if (!lines)
                         sb.Append(' ');
                 }
@@ -142,11 +151,18 @@ namespace winbash.util
         {
             internal readonly Dictionary<Column, object> _data = new Dictionary<Column, object>();
 
+            protected internal virtual bool Separator => false;
+
             public Row SetData(Column col, object data)
             {
                 _data[col] = data;
                 return this;
             }
+        }
+
+        private class SeparatorRow : Row
+        {
+            protected internal override bool Separator => true;
         }
 
         public class Column
