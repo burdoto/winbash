@@ -1,6 +1,7 @@
 ﻿using System.Security.AccessControl;
 using System.Security.Principal;
 using CommandLine;
+using comroid.common;
 using SymbolicLinkSupport;
 using winbash.util;
 
@@ -89,7 +90,7 @@ public static class Program
     private static string GetSize(string path, bool humanReadable)
     {
         var amount = Directory.Exists(path) ? 4096 : new FileInfo(path).Length;
-        return humanReadable ? ByteUtil.ReadableAmount(amount) : amount.ToString();
+        return humanReadable ? (amount * Units.Bytes).Normalize().ToString() : amount.ToString();
     }
 
     private static string GetChangedMonth(string path) => File.GetLastWriteTime(path).Month switch
