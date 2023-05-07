@@ -8,6 +8,7 @@ namespace winbash.rgx;
 public static class RGX
 {
     private static readonly ILog log = new Log("rgx");
+    private static string[] excessArgs;
 
     static RGX()
     {
@@ -16,21 +17,25 @@ public static class RGX
 
     public static void Main(string[] args)
     {
-        CLI.parser.ParseArguments<Arg>(args)
-            .WithParsed(Run)
-            .WithNotParsed(Error);
+        var result = CLI.parser.ParseArguments<Arg>(args);
+        excessArgs = result.MapResult(_ => Enumerable.Empty<string>(), 
+            errs => errs.OfType<UnknownOptionError>().Select(e => e.Token)).ToArray();
+        result.WithParsed(Run).WithNotParsed(Error);
     }
 
     private static void Run(Arg cmd)
     {
         var pattern = new Regex(cmd.pattern, (RegexOptions)cmd.options.Aggregate(0, (x, y) => x | (int)y));
+        using var input = excessArgs.Length > 0 ? new StringReader(string.Join(' ', excessArgs)) : Console.In;
+        using var output = cmd.fileOutput is not null ? new StreamWriter(new FileInfo(cmd.fileOutput!).OpenWrite()) : Console.Out;
 
-        // handle IO
-        while (Console.ReadLine() is { } line)
-            if (pattern.IsMatch(line))
-                Console.WriteLine(cmd.replacement == null ? line : pattern.Replace(line, cmd.replacement));
+        if (cmd.split)
+            output.Write(pattern.Split(input.ReadToEnd()));
+        else while (input.ReadLine() is { } line) 
+            if (pattern.IsMatch(line)) 
+                output.WriteLine(cmd.replacement == null ? line : pattern.Replace(line, cmd.replacement));
     }
-    
+
     private static void Error(IEnumerable<Error> errors)
     {
         foreach (var err in errors)
@@ -39,11 +44,17 @@ public static class RGX
 
     private class Arg
     {
-        [Value(0, MetaName = "pattern")]
+        [Value(0, MetaName = "pattern", Required = true)]
         public string pattern { get; set; } = null!;
-        [Value(1, MetaName = "replacement", Required = false)]
+
+        [Value(1, MetaName = "replacement", Required = false, Default = null)]
         public string? replacement { get; set; }
-        [Option(shortName: 'o', longName: "options", Separator = ',')]
-        public IEnumerable<RegexOptions> options { get; set; }
+
+        [Option(shortName: 'o', longName: "options", Separator = ',', Required = false)]
+        public IEnumerable<RegexOptions> options { get; set; } = null!;
+        [Option(shortName: 's', longName: "split", Required = false, Default = false)]
+        public bool split { get; set; }
+        [Option(shortName: 'f', longName: "file", Required = false, Default = null)]
+        public string? fileOutput { get; set; }
     }
 }
