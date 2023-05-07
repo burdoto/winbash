@@ -8,7 +8,7 @@ namespace winbash.rgx;
 public static class RGX
 {
     private static readonly ILog log = new Log("rgx");
-    private static string[] excessArgs;
+    private static string[] excessArgs = Array.Empty<string>();
 
     static RGX()
     {
@@ -27,11 +27,29 @@ public static class RGX
     {
         var pattern = new Regex(cmd.pattern, (RegexOptions)cmd.options.Aggregate(0, (x, y) => x | (int)y));
         using var input = excessArgs.Length > 0 ? new StringReader(string.Join(' ', excessArgs)) : Console.In;
-        using var output = cmd.fileOutput is not null ? new StreamWriter(new FileInfo(cmd.fileOutput!).OpenWrite()) : Console.Out;
+        using var output = cmd.fileOutput is not null ? new StreamWriter(new FileStream(cmd.fileOutput, FileMode.Truncate, FileAccess.Write)) : Console.Out;
 
         if (cmd.split)
-            foreach (var part in pattern.Split(input.ReadToEnd()))
-                output.WriteLine(part);
+        {
+            if (cmd.pattern.StartsWith('^'))
+                // do not match beginning of string
+                pattern = new Regex(cmd.pattern.Substring(1));
+            int c,r=0;
+            var buf = new StringWriter();
+            var maxLen = pattern.ToString().Length * 4;
+            while ((c = input.Read()) != -1)
+            {
+                buf.Write(c);
+                output.Write(c);
+                r += 1;
+
+                if (!pattern.IsMatch(buf.ToString()) || r > maxLen)
+                    continue;
+                buf.Close();
+                buf = new StringWriter();
+                output.WriteLine();
+            }
+        }
         else while (input.ReadLine() is { } line)
             if (pattern.IsMatch(line)) 
                 output.WriteLine(cmd.replacement == null ? line : pattern.Replace(line, cmd.replacement));
