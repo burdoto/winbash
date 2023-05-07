@@ -1,11 +1,12 @@
 ﻿using System.ComponentModel;
 using System.Runtime.InteropServices;
 using CommandLine;
+using comroid.common;
 using winbash.util;
 
 namespace winbash.du;
 
-public static class Program
+public static class DiskUsage
 {
     private static Args args = null!;
     
@@ -35,10 +36,10 @@ public static class Program
     }
 
     private static void PrintFileSize(long size, bool endl = false) => Console.Write(
-        $"{(args.HumanReadable ? ByteUtil.ReadableAmount(size) : size)}\t{(endl ? Environment.NewLine : string.Empty)}");
+        $"{(args.HumanReadable ? (size * Units.Bytes).Normalize() : size)}\t{(endl ? Environment.NewLine : string.Empty)}");
 
     // https://stackoverflow.com/questions/3750590/get-size-of-file-on-disk
-    public static long GetFileSizeOnDisk(string file)
+    private static long GetFileSizeOnDisk(string file)
     {
         FileInfo info = new FileInfo(file);
         uint dummy, sectorsPerCluster, bytesPerSector;
@@ -53,11 +54,11 @@ public static class Program
     }
 
     [DllImport("kernel32.dll")]
-    static extern uint GetCompressedFileSizeW([In, MarshalAs(UnmanagedType.LPWStr)] string lpFileName,
+    private static extern uint GetCompressedFileSizeW([In, MarshalAs(UnmanagedType.LPWStr)] string lpFileName,
         [Out, MarshalAs(UnmanagedType.U4)] out uint lpFileSizeHigh);
 
     [DllImport("kernel32.dll", SetLastError = true, PreserveSig = true)]
-    static extern int GetDiskFreeSpaceW([In, MarshalAs(UnmanagedType.LPWStr)] string lpRootPathName,
+    private static extern int GetDiskFreeSpaceW([In, MarshalAs(UnmanagedType.LPWStr)] string lpRootPathName,
         out uint lpSectorsPerCluster, out uint lpBytesPerSector, out uint lpNumberOfFreeClusters,
         out uint lpTotalNumberOfClusters);
     
