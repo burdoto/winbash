@@ -4,7 +4,7 @@
         <RootNamespace>winbash.util</RootNamespace>
         <ImplicitUsings>disable</ImplicitUsings>
         <Nullable>enable</Nullable>
-        <TargetFrameworks>net6.0;net7.0;netstandard2.1</TargetFrameworks>
+        <TargetFramework>net6.0</TargetFramework>
     </PropertyGroup>
 
     <ItemGroup>
@@ -14,6 +14,7 @@
 
     <ItemGroup>
       <ProjectReference Include="..\..\csapi\common\common.csproj" />
+      <ProjectReference Include="..\rgx\rgx.csproj" />
     </ItemGroup>
 
 </Project>

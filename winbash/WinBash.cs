@@ -1,12 +1,14 @@
 ﻿using System.Diagnostics;
+using comroid.common;
 using winbash.util;
 
 namespace winbash;
 
-public static class Program
+public static class WinBash
 {
     public static void Main(string[] _)
     {
+        Log.Root.At(LogLevel.Info, "hi");
         bool exiting = false;
         
         AnsiUtil.Init();

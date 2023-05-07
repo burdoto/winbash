@@ -1,6 +1,7 @@
 ﻿using System.Security.AccessControl;
 using System.Security.Principal;
 using CommandLine;
+using comroid.common;
 using SymbolicLinkSupport;
 using winbash.util;
 
@@ -18,7 +19,7 @@ public static class Program
             entries = entries.Where(f => (new FileInfo(f).Attributes & FileAttributes.Hidden) == 0);
         if (args.Detailed)
         {
-            var table = new TextTable(false);
+            var table = new TextTable() { Header = false };
             var mod = table.AddColumn("mod");
             var hlc = table.AddColumn("hardlinkCount", true);
             var own = table.AddColumn("owner");

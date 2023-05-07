@@ -5,11 +5,15 @@
         <TargetFramework>net6.0</TargetFramework>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
-        <RootNamespace>winbash.du</RootNamespace>
+        <RootNamespace>winbash.rgx</RootNamespace>
     </PropertyGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\winbash-util\winbash-util.csproj" />
+      <PackageReference Include="CommandLineParser" Version="2.9.1" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\..\csapi\common\common.csproj" />
     </ItemGroup>
 
 </Project>

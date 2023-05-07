@@ -2,7 +2,7 @@
 
     <PropertyGroup>
         <OutputType>Exe</OutputType>
-        <TargetFramework>net7.0</TargetFramework>
+        <TargetFramework>net6.0</TargetFramework>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
         <RootNamespace>winbash.ls</RootNamespace>
@@ -10,6 +10,12 @@
 
     <ItemGroup>
       <ProjectReference Include="..\winbash-util\winbash-util.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <Reference Include="comroid.common">
+        <HintPath>..\..\csapi\common\bin\Debug\net6.0\comroid.common.dll</HintPath>
+      </Reference>
     </ItemGroup>
 
 </Project>
