@@ -11,7 +11,7 @@ public static class CLI
         cfg.CaseSensitive = false;
         cfg.CaseInsensitiveEnumValues = true;
         cfg.HelpWriter = Console.Out;
-        cfg.IgnoreUnknownArguments = false;
+        cfg.IgnoreUnknownArguments = true;
         cfg.AutoHelp = true;
         cfg.AutoVersion = true;
         cfg.ParsingCulture = CultureInfo.InvariantCulture;
