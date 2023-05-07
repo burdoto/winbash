@@ -30,8 +30,9 @@ public static class RGX
         using var output = cmd.fileOutput is not null ? new StreamWriter(new FileInfo(cmd.fileOutput!).OpenWrite()) : Console.Out;
 
         if (cmd.split)
-            output.Write(pattern.Split(input.ReadToEnd()));
-        else while (input.ReadLine() is { } line) 
+            foreach (var part in pattern.Split(input.ReadToEnd()))
+                output.WriteLine(part);
+        else while (input.ReadLine() is { } line)
             if (pattern.IsMatch(line)) 
                 output.WriteLine(cmd.replacement == null ? line : pattern.Replace(line, cmd.replacement));
     }
