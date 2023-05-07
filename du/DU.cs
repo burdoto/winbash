@@ -6,7 +6,7 @@ using winbash.util;
 
 namespace winbash.du;
 
-public static class DiskUsage
+public static class DU
 {
     private static Args args = null!;
     

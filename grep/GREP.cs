@@ -1,6 +1,6 @@
 ﻿namespace winbash.grep;
 
-public static class Program
+public static class GREP
 {
     public static void Main(string[] args)
     {

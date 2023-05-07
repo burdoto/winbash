@@ -1,6 +1,6 @@
 ﻿namespace winbash.cat;
 
-public static class Program
+public static class CAT
 {
     public static void Main(string[] args)
     {

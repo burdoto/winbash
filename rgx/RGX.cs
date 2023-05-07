@@ -1,4 +1,5 @@
-﻿using System.Text.RegularExpressions;
+﻿using System.Globalization;
+using System.Text.RegularExpressions;
 using CommandLine;
 using comroid.common;
 using winbash.util;
@@ -16,13 +17,26 @@ public static class RGX
 
     public static void Main(string[] args)
     {
-        CLI.parser.ParseArguments<Arg>(args)
+        new Parser(cfg =>
+            {
+                cfg.CaseSensitive = false;
+                cfg.CaseInsensitiveEnumValues = true;
+                cfg.HelpWriter = Console.Out;
+                cfg.IgnoreUnknownArguments = true;
+                cfg.AutoHelp = true;
+                cfg.AutoVersion = true;
+                cfg.ParsingCulture = CultureInfo.InvariantCulture;
+                cfg.EnableDashDash = false;
+                cfg.MaximumDisplayWidth = Console.WindowWidth;
+            }).ParseArguments<Arg>(args)
             .WithParsed(Run)
             .WithNotParsed(Error);
     }
 
     private static void Run(Arg cmd)
     {
+        log.At(LogLevel.Info, "excess: " + cmd.excess);
+
         var pattern = new Regex(cmd.pattern, (RegexOptions)cmd.options.Aggregate(0, (x, y) => x | (int)y));
         using var input = cmd is { split: true, replacement: not null } ? new StringReader(cmd.replacement) : Console.In;
         using var output = cmd.fileOutput is not null ? new StreamWriter(new FileStream(cmd.fileOutput, FileMode.Truncate, FileAccess.Write)) : Console.Out;
@@ -41,19 +55,22 @@ public static class RGX
             while ((c = input.Read()) != -1)
             {
                 buf.Write((char)c);
-                output.Write((char)c);
-
                 var str = buf.ToString();
-                if (!pattern.IsMatch(str))
+                if (pattern.Match(str) is not { Success: true } match)
+                {
+                    output.Write((char)c);
                     continue;
+                }
+                if (!string.IsNullOrWhiteSpace(str.Remove(match.Index, match.Length)))
+                    output.WriteLine();
                 buf.Close();
                 buf = new StringWriter();
-                output.WriteLine();
             }
         }
-        else while (input.ReadLine() is { } line)
-            if (pattern.IsMatch(line)) 
-                output.WriteLine(cmd.replacement == null ? line : pattern.Replace(line, cmd.replacement));
+        else
+            while (input.ReadLine() is { } line)
+                if (pattern.IsMatch(line))
+                    output.WriteLine(cmd.replacement == null ? line : pattern.Replace(line, cmd.replacement));
     }
 
     private static void Error(IEnumerable<Error> errors)

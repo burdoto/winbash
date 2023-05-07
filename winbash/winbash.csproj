@@ -10,7 +10,6 @@
     <ItemGroup>
       <ProjectReference Include="..\cat\cat.csproj" />
       <ProjectReference Include="..\du\du.csproj" />
-      <ProjectReference Include="..\grep\grep.csproj" />
       <ProjectReference Include="..\ls\ls.csproj" />
       <ProjectReference Include="..\rgx\rgx.csproj" />
       <ProjectReference Include="..\sudo\sudo.csproj" />

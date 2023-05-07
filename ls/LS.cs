@@ -7,7 +7,7 @@ using winbash.util;
 
 namespace winbash.ls;
 
-public static class Program
+public static class LS
 {
     public static void Main(string[] param)
     {
