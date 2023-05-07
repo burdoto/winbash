@@ -19,7 +19,7 @@ public static class Program
             entries = entries.Where(f => (new FileInfo(f).Attributes & FileAttributes.Hidden) == 0);
         if (args.Detailed)
         {
-            var table = new TextTable() { Header = false };
+            var table = new TextTable { Header = false };
             var mod = table.AddColumn("mod");
             var hlc = table.AddColumn("hardlinkCount", true);
             var own = table.AddColumn("owner");
@@ -90,7 +90,7 @@ public static class Program
     private static string GetSize(string path, bool humanReadable)
     {
         var amount = Directory.Exists(path) ? 4096 : new FileInfo(path).Length;
-        return humanReadable ? ByteUtil.ReadableAmount(amount) : amount.ToString();
+        return humanReadable ? (amount * Units.Bytes).Normalize().ToString() : amount.ToString();
     }
 
     private static string GetChangedMonth(string path) => File.GetLastWriteTime(path).Month switch
